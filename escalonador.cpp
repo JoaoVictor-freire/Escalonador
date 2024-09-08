@@ -44,6 +44,8 @@ void fcfs(const vector<Process>& processes) {
     int currentTime = 0;
     vector<int> returnTimes, responseTimes, waitingTimes;
 
+    // for com iterator para criar uma váriável temporária para tratar os tempos de proecsso por processo.
+    // desse modo não precisamos acessar por indices.
     for (const auto& process : processes) {
         if (currentTime < process.chegada)
             currentTime = process.chegada;
@@ -59,7 +61,7 @@ void fcfs(const vector<Process>& processes) {
         currentTime += process.duration;
     }
 
-    cout << "FCFS " << fixed << setprecision(1)
+    std::cout << "FCFS " << fixed << setprecision(1)
               << calculateAverage(returnTimes) << " "
               << calculateAverage(responseTimes) << " "
               << calculateAverage(waitingTimes) << "\n";
@@ -71,13 +73,17 @@ void sjf(vector<Process> processes) {
     vector<Process> ready;
 
     while (!processes.empty() || !ready.empty()) {
-        for (auto it = processes.begin(); it != processes.end();) {
-            if (it->chegada <= currentTime) {
-                ready.push_back(*it);
-                it = processes.erase(it);
-            } else {
-                ++it;
-            }
+        for (int i = 0; i < processes.size(); ++i) {
+        if (processes[i].chegada <= currentTime) {
+            // Adiciona o processo à lista 'ready'
+            ready.push_back(processes[i]);
+
+            // Remove o processo da lista 'processes'
+            processes.erase(processes.begin() + i);
+
+            // Como o vetor foi reduzido de tamanho, ajustamos o índice
+            --i;  // Decrementa o índice para evitar pular o próximo elemento
+        }
         }
 
         if (!ready.empty()) {
@@ -105,7 +111,7 @@ void sjf(vector<Process> processes) {
         }
     }
 
-    cout << "SJF " << fixed << setprecision(1)
+    std::cout << "SJF " << fixed << setprecision(1)
               << calculateAverage(returnTimes) << " "
               << calculateAverage(responseTimes) << " "
               << calculateAverage(waitingTimes) << "\n";
@@ -152,7 +158,7 @@ void roundRobin(vector<Process> processes, int quantum) {
         }
     }
 
-    cout << "RR " << fixed << setprecision(1)
+    std::cout << "RR " << fixed << setprecision(1)
               << calculateAverage(returnTimes) << " "
               << calculateAverage(responseTimes) << " "
               << calculateAverage(waitingTimes) << "\n";
@@ -160,7 +166,7 @@ void roundRobin(vector<Process> processes, int quantum) {
 
 void printProcesses(const vector<Process>& processes) {
     for (const auto& process : processes) {
-        cout << "Arrival: " << process.chegada 
+        std::cout << "Arrival: " << process.chegada 
                   << ", Duration: " << process.duration 
                   << ", Remaining: " << process.remainingTime << "\n";
     }
