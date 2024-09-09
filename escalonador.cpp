@@ -25,12 +25,16 @@ void readInput(vector<Process>& processes, const string& filename) {
             processes.push_back(Process(chegada, duration, duration));
         }
         file.close();  // Fecha o arquivo após a leitura
+
+        // Ordena os processos pelo tempo de chegada
+        sort(processes.begin(), processes.end(), [](const Process& a, const Process& b) {
+            return a.chegada < b.chegada;
+        });
     } else {
         cerr << "Não foi possível abrir o arquivo!" << endl;
     }
-
-    
 }
+
 
 double calculateAverage(vector<int>& values) {
     if (values.empty()) {
