@@ -36,6 +36,7 @@ void readInput(vector<Process>& processes, const string& filename) {
 }
 
 
+
 double calculateAverage(vector<int>& values) {
     if (values.empty()) {
         return 0.0;  // Retorna 0 se a lista estiver vazia
@@ -187,7 +188,7 @@ void printProcesses(const vector<Process>& processes) {
 
 int main() {
     vector<Process> processes;
-    string fileName = "caso2.txt";
+    string fileName = "caso1.txt";
     readInput(processes, fileName);
 
     printProcesses(processes);
