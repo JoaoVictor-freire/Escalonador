@@ -8,12 +8,12 @@
 using namespace std;
 
 struct Process {
-    int chegada, duration, remainingTime;
+    int chegada, duration, t_restante;
     int startExecution = -1;
     int finishTime = -1;
 
     // Construtor explícito
-    Process(int a, int d, int r) : chegada(a), duration(d), remainingTime(r) {}
+    Process(int a, int d, int r) : chegada(a), duration(d), t_restante(r) {}
 };
 
 void readInput(vector<Process>& processes, const string& filename) {
@@ -28,6 +28,8 @@ void readInput(vector<Process>& processes, const string& filename) {
     } else {
         cerr << "Não foi possível abrir o arquivo!" << endl;
     }
+
+    
 }
 
 double calculateAverage(vector<int>& values) {
@@ -42,7 +44,7 @@ double calculateAverage(vector<int>& values) {
 
 void fcfs(const vector<Process>& processes) {
     int currentTime = 0;
-    vector<int> returnTimes, responseTimes, waitingTimes;
+    vector<int> t_retorno, t_resposta, t_espera;
 
     // for com iterator para criar uma váriável temporária para tratar os tempos de proecsso por processo.
     // desse modo não precisamos acessar por indices.
@@ -54,42 +56,44 @@ void fcfs(const vector<Process>& processes) {
         int returnTime = waitingTime + process.duration;
         int responseTime = waitingTime;
 
-        returnTimes.push_back(returnTime);
-        responseTimes.push_back(responseTime);
-        waitingTimes.push_back(waitingTime);
+        t_retorno.push_back(returnTime);
+        t_resposta.push_back(responseTime);
+        t_espera.push_back(waitingTime);
 
         currentTime += process.duration;
     }
 
+    //calculando as médias
     std::cout << "FCFS " << fixed << setprecision(1)
-              << calculateAverage(returnTimes) << " "
-              << calculateAverage(responseTimes) << " "
-              << calculateAverage(waitingTimes) << "\n";
+              << calculateAverage(t_retorno) << " "
+              << calculateAverage(t_resposta) << " "
+              << calculateAverage(t_espera) << "\n";
 }
 
 void sjf(vector<Process> processes) {
     int currentTime = 0;
-    vector<int> returnTimes, responseTimes, waitingTimes;
+    vector<int> t_retorno, t_reposta, t_espera;
     vector<Process> ready;
 
     while (!processes.empty() || !ready.empty()) {
+
         for (int i = 0; i < processes.size(); ++i) {
-        if (processes[i].chegada <= currentTime) {
-            // Adiciona o processo à lista 'ready'
-            ready.push_back(processes[i]);
+            if (processes[i].chegada <= currentTime) {
 
-            // Remove o processo da lista 'processes'
-            processes.erase(processes.begin() + i);
+                // se o processo está no seu tempo de entrar na fila de pronto ele é adicionado a ela e tirado da fila de processos.
+                ready.push_back(processes[i]);
+                processes.erase(processes.begin() + i);
 
-            // Como o vetor foi reduzido de tamanho, ajustamos o índice
-            --i;  // Decrementa o índice para evitar pular o próximo elemento
+                // como o nº de processos foi diminuido decrementamos 'i' para não pular processos.
+                --i;
+            }
         }
-        }
 
+        
         if (!ready.empty()) {
-            sort(ready.begin(), ready.end(), [](const Process& a, const Process& b) {
-                return a.duration < b.duration;
-            });
+            //função da biblioteca algorithm que está ordenando o meu vetor do inicio ao fim em uma ordem crescente
+            //levando em consideração a função passada no terceiro argumento.
+            sort(ready.begin(), ready.end(), [](const Process& a, const Process& b) {return a.duration < b.duration;} );
 
             auto process = ready.front();
             ready.erase(ready.begin());
@@ -101,9 +105,9 @@ void sjf(vector<Process> processes) {
             int returnTime = waitingTime + process.duration;
             int responseTime = waitingTime;
 
-            returnTimes.push_back(returnTime);
-            responseTimes.push_back(responseTime);
-            waitingTimes.push_back(waitingTime);
+            t_retorno.push_back(returnTime);
+            t_reposta.push_back(responseTime);
+            t_espera.push_back(waitingTime);
 
             currentTime += process.duration;
         } else {
@@ -111,64 +115,69 @@ void sjf(vector<Process> processes) {
         }
     }
 
+    //calculando as médias
     std::cout << "SJF " << fixed << setprecision(1)
-              << calculateAverage(returnTimes) << " "
-              << calculateAverage(responseTimes) << " "
-              << calculateAverage(waitingTimes) << "\n";
+              << calculateAverage(t_retorno) << " "
+              << calculateAverage(t_reposta) << " "
+              << calculateAverage(t_espera) << "\n";
 }
 
 void roundRobin(vector<Process> processes, int quantum) {
     int currentTime = 0;
-    queue<Process*> queue;
-    vector<int> returnTimes, responseTimes, waitingTimes;
+    queue<Process*> fila; //processor organizados em forma de fila visto que temos um comportamento FCFS
+    vector<int> t_retorno, t_resposta, t_espera;
 
     size_t index = 0;
-    while (index < processes.size() || !queue.empty()) {
+    while (index < processes.size() || !fila.empty()) {
+
+        //passando os processos para a fila conforme vão chegando
         while (index < processes.size() && processes[index].chegada <= currentTime) {
-            queue.push(&processes[index]);
+            fila.push(&processes[index]);
             index++;
         }
 
-        if (!queue.empty()) {
-            Process* process = queue.front();
-            queue.pop();
+        if (!fila.empty()) {
+            Process* process = fila.front();
+            fila.pop();
 
             if (process->startExecution == -1) {
                 process->startExecution = currentTime;
             }
 
-            int executionTime = min(quantum, process->remainingTime);
-            process->remainingTime -= executionTime;
-            currentTime += executionTime;
+            int executionTime = min(quantum, process->t_restante); // retorna o menor entre os 2 parametros
+            process->t_restante -= executionTime; // diminui quantum do tempo de execução do processo 
+            currentTime += executionTime; 
 
-            if (process->remainingTime > 0) {
-                queue.push(process);
+            if (process->t_restante > 0) {
+                fila.push(process); // se ainda tiver tempo de execução vai pro final da fila.
             } else {
+                // acabou e calcula todos os tempo solicitados.
                 process->finishTime = currentTime;
                 int waitingTime = process->finishTime - process->chegada - process->duration;
                 int returnTime = process->finishTime - process->chegada;
                 int responseTime = process->startExecution - process->chegada;
 
-                returnTimes.push_back(returnTime);
-                responseTimes.push_back(responseTime);
-                waitingTimes.push_back(waitingTime);
+                t_retorno.push_back(returnTime);
+                t_resposta.push_back(responseTime);
+                t_espera.push_back(waitingTime);
             }
         } else {
             currentTime++;
         }
     }
 
+    //calculando as médias
     std::cout << "RR " << fixed << setprecision(1)
-              << calculateAverage(returnTimes) << " "
-              << calculateAverage(responseTimes) << " "
-              << calculateAverage(waitingTimes) << "\n";
+              << calculateAverage(t_retorno) << " "
+              << calculateAverage(t_resposta) << " "
+              << calculateAverage(t_espera) << "\n";
 }
 
 void printProcesses(const vector<Process>& processes) {
     for (const auto& process : processes) {
         std::cout << "Arrival: " << process.chegada 
                   << ", Duration: " << process.duration 
-                  << ", Remaining: " << process.remainingTime << "\n";
+                  << ", Remaining: " << process.t_restante << "\n";
     }
 }
 
