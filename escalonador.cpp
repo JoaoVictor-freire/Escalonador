@@ -1,3 +1,18 @@
+/*
+ * --------------------------------------------------------------
+ * Trabalho 1 de Sistemas Operacionais - FCFS | SJF | RR
+ * Professor: Fernando Menezes Matos
+ * Alunos: João Victor Freir e Matheus de Mendonça
+ *
+ * Compilação:
+ * Win: g++ -o escalonador .\escalonador.cpp
+ * Mac: g++ -std=c++11 escalonador.cpp -o escalonador
+ * 
+ * Execução:
+ * Win: .\escalonador.exe 
+ * --------------------------------------------------------------
+ */
+
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -34,7 +49,6 @@ void readInput(vector<Process>& processes, const string& filename) {
         cerr << "Não foi possível abrir o arquivo!" << endl;
     }
 }
-
 
 double calculateAverage(vector<int>& values) {
     if (values.empty()) {
@@ -93,7 +107,6 @@ void sjf(vector<Process> processes) {
             }
         }
 
-        
         if (!ready.empty()) {
             //função da biblioteca algorithm que está ordenando o meu vetor do inicio ao fim em uma ordem crescente
             //levando em consideração a função passada no terceiro argumento.
@@ -177,21 +190,10 @@ void roundRobin(vector<Process> processes, int quantum) {
               << calculateAverage(t_espera) << "\n";
 }
 
-void printProcesses(const vector<Process>& processes) {
-    for (const auto& process : processes) {
-        std::cout << "Arrival: " << process.chegada 
-                  << ", Duration: " << process.duration 
-                  << ", Remaining: " << process.t_restante << "\n";
-    }
-}
-
 int main() {
     vector<Process> processes;
     string fileName = "caso2.txt";
     readInput(processes, fileName);
-
-    printProcesses(processes);
-
 
     fcfs(processes);
     sjf(processes);
