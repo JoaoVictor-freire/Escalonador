@@ -28,4 +28,3 @@ Mac: g++ -std=c++11 escalonador.cpp -o escalonador
 Execução:
 Win: .\escalonador.exe 
 Mac: ./escalonador
---------------------------------------------------------------
