@@ -27,6 +27,7 @@ struct Process {
     int timeIn, timeDuration, timeRemaning;
     int startExecution = -1;
     int finishTime = -1;
+    bool firstExecution = true;
 
     // Construtor explícito
     Process(int a, int d, int r) : timeIn(a), timeDuration(d), timeRemaning(r) {}
@@ -120,11 +121,21 @@ void sjf(vector<Process> processes) {
 
             int waitingTime = currentTime - process.timeIn;
             int returnTime = waitingTime + process.timeDuration;
-            int responseTime = waitingTime;
+
+            int responseTime;
+            if (process.firstExecution) {
+                responseTime = currentTime - process.timeIn;
+                process.firstExecution = false;  // Marca como já executado
+            } else {
+                responseTime = -1;  // Não recalcula o response time se já foi executado
+            }
 
             t_return.push_back(returnTime);
-            t_reponse.push_back(responseTime);
             t_wait.push_back(waitingTime);
+
+            if (responseTime != -1){  // Adiciona apenas tempos válidos
+                t_reponse.push_back(responseTime);
+            }
 
             currentTime += process.timeDuration;
         } else {
@@ -198,7 +209,7 @@ void roundRobin(vector<Process> processes, int quantum) {
 
 int main() {
     vector<Process> processes;
-    string fileName = "caso1.txt";
+    string fileName = "caso2.txt";
     readInput(processes, fileName);
 
     fcfs(processes);
